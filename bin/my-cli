@@ -1,0 +1,35 @@
+#!/usr/bin/env node
+
+process.env.NODE_PATH = __dirname + '/../node_modules/'
+const { resolve } = require('path')
+const res = command => resolve(__dirname, '../lib/', command)
+
+const fs = require("fs");
+const chalk = require('chalk');
+const commander = require('commander');
+const pkg = require('../package.json');
+
+commander.version(pkg.version, '-v,--version');
+commander
+  .command('init <dirname>')
+  .description(pkg.description)
+  .action(dirname => {
+    // 命令 init 触发时的回掉函数
+    if(fs.existsSync(dirname)) {
+      return console.log(chalk.red(`dirname &{dirname} is exist`));
+    }
+    require(res('init'));
+  })
+
+  // 如果输入没有注册的命令, 输出帮助提示
+  commander.arguments('<command>').action(cmd => {
+    commander.outputHelp();
+    console.log(' ');
+    console.log(`error: unknown option '${cmd}'`);
+  })
+
+  commander.parse(process.argv);
+
+  if (!process.argv.slice(2).length) {
+    commander.outputHelp();
+  }
